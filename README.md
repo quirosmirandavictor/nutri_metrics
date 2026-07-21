@@ -1,25 +1,71 @@
-# 🥗 Nutri Metrics Calorie Tracking Module
+# 🥗 NutriMetrics - Calorie Tracking API
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Architecture: Clean](https://img.shields.io/badge/Architecture-Clean-1F8A70)](README.md#-architecture)
-[![Pattern: CQRS](https://img.shields.io/badge/Pattern-CQRS%20%2B%20MediatR-blue)](README.md#-architecture)
+[![Architecture: Clean](https://img.shields.io/badge/Architecture-Clean-1F8A70)](#-architecture--clean-design)
+[![Pattern: CQRS](https://img.shields.io/badge/Pattern-CQRS%20%2B%20MediatR-blue)](#-architecture--clean-design)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 # 📖 Overview
 
-**NutriMetrics** is a modular platform built on **.NET 10** designed for calorie and nutritional tracking.
+**NutriMetrics** is a modular platform built on **.NET 10** for calorie and nutritional tracking.
 
-This repository contains the **CalorieTracking** module, which allows users to search for nutritional information by entering free-text food descriptions in **Spanish** (e.g., *"2 manzanas y 100g de pechuga de pollo"*).
+This repository currently contains the **Calorie Tracking ** module, exposing a REST API that allows users to search nutritional information using **natural language in Spanish**, for example:
 
-The system seamlessly translates the input query using **GoogleTranslateFreeApi** and queries the **CalorieNinjas** database, returning structured macronutrients (calories, protein, fat, carbohydrates, and serving size) through a decoupled, clean design.
+> `2 manzanas y 100g de pechuga de pollo`
+
+The request is automatically translated to English before querying the **CalorieNinjas API**, returning structured nutritional information such as:
+
+- Calories
+- Protein
+- Fat
+- Carbohydrates
+- Serving Size
+
+The solution follows **Clean Architecture** and **CQRS**, keeping the domain layer independent from external services.
+
+---
+
+# ✨ Features
+
+- ✅ Search foods using natural language
+- ✅ Spanish input support
+- ✅ Automatic translation before querying the nutrition provider
+- ✅ External Nutrition API integration
+- ✅ Clean Architecture
+- ✅ CQRS with MediatR
+- ✅ Dependency Injection
+- ✅ REST API
+
+---
+
+# 🔄 Request Flow
+
+```text
+Spanish Query
+        │
+        ▼
+Translation Service
+        │
+        ▼
+CalorieNinjas API
+        │
+        ▼
+Domain Entity
+        │
+        ▼
+Response DTO
+        │
+        ▼
+JSON Response
+```
 
 ---
 
 # 🏗 Architecture & Clean Design
 
-The project strictly follows **Clean Architecture** principles and **CQRS**, ensuring the domain core remains 100% free of external dependencies.
+The project strictly follows **Clean Architecture** and **CQRS**, ensuring the domain core remains completely independent of infrastructure concerns.
 
 ```mermaid
 graph TD
@@ -53,7 +99,7 @@ graph TD
 
     %% External Services
     subgraph External["External APIs"]
-        GoogleAPI["Google Translate API"]
+        GoogleAPI["Translation Provider"]
         CalorieNinjasAPI["CalorieNinjas API"]
     end
 
@@ -94,6 +140,8 @@ graph TD
     class External ext;
 ```
 
+---
+
 # 📂 Solution Structure
 
 ```text
@@ -126,6 +174,99 @@ NUTRI_METRICS/
 │       ├── NutriMetrics.Shared.Domain/
 │       └── NutriMetrics.Shared.Infrastructure/
 │
-├── .gitignore
-├── NutriMetrics.slnx
 └── README.md
+```
+
+---
+
+# 📡 API Example
+
+Search foods using natural language.
+
+### Request
+
+```http
+GET /api/food/search?query=2 manzanas y 100g de pechuga de pollo
+```
+
+### Response
+
+```json
+[
+  {
+    "name": "apple",
+    "calories": 94.6,
+    "protein": 0.5,
+    "fat": 0.3,
+    "carbohydrates": 25.1,
+    "servingSize": 182
+  },
+  {
+    "name": "chicken breast",
+    "calories": 165,
+    "protein": 31,
+    "fat": 3.6,
+    "carbohydrates": 0,
+    "servingSize": 100
+  }
+]
+```
+
+> Response values depend on the data returned by the external nutrition provider.
+
+---
+
+# 🔌 External Services
+
+The module communicates with external providers through abstractions defined in the Domain layer.
+
+Current infrastructure implementations:
+
+- GoogleTranslateFreeApi
+- CalorieNinjas API
+
+This keeps the application independent from specific providers and allows future implementations without affecting the domain logic.
+
+---
+
+# 🛠 Technology Stack
+
+- .NET 10
+- ASP.NET Core Web API
+
+Architecture
+
+- Clean Architecture
+- CQRS
+- MediatR
+
+Infrastructure
+
+- HttpClient
+- Dependency Injection
+
+External Services
+
+- GoogleTranslateFreeApi
+- CalorieNinjas API
+
+---
+
+# 🎯 Design Goals
+
+The project aims to demonstrate:
+
+- Modular architecture
+- Separation of concerns
+- Dependency Inversion Principle
+- Infrastructure decoupling
+- External API integration
+- Maintainable and testable application design
+
+Rather than focusing solely on functionality, the repository showcases architectural practices that can scale as additional modules are introduced.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
