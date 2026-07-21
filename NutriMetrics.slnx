@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NutriMetrics.Api/NutriMetrics.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/CalorieTracking/">
+    <Project Path="src/Modules/CalorieTracking/NutriMetrics.Modules.CalorieTracking.Application/NutriMetrics.Modules.CalorieTracking.Application.csproj" />
+    <Project Path="src/Modules/CalorieTracking/NutriMetrics.Modules.CalorieTracking.Domain/NutriMetrics.Modules.CalorieTracking.Domain.csproj" />
+    <Project Path="src/Modules/CalorieTracking/NutriMetrics.Modules.CalorieTracking.Infrastructure/NutriMetrics.Modules.CalorieTracking.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/NutriMetrics.Shared.Domain/NutriMetrics.Shared.Domain.csproj" />
+    <Project Path="src/Shared/NutriMetrics.Shared.Infrastructure/NutriMetrics.Shared.Infrastructure.csproj" />
+  </Folder>
+</Solution>
