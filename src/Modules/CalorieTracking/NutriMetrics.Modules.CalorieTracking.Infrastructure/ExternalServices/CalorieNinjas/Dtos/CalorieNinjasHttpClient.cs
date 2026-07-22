@@ -39,6 +39,7 @@ public class CalorieNinjasHttpClient : INutritionApiClient
 
         // 3. Map response to Domain
         return response.Items.Select(item => new FoodItem(
+            userId: Guid.Empty, // Temporary - these are search results, not persisted
             name: item.Name,
             calories: item.Calories,
             proteinGrams: item.ProteinG,

@@ -1,12 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\NutriMetrics.Modules.CalorieTracking.Domain\NutriMetrics.Modules.CalorieTracking.Domain.csproj" />
+    <ProjectReference Include="..\NutriMetrics.Modules.Identity.Domain\NutriMetrics.Modules.Identity.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="14.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
   <PropertyGroup>

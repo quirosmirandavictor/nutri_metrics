@@ -8,6 +8,11 @@
     <Project Path="src/Modules/CalorieTracking/NutriMetrics.Modules.CalorieTracking.Domain/NutriMetrics.Modules.CalorieTracking.Domain.csproj" />
     <Project Path="src/Modules/CalorieTracking/NutriMetrics.Modules.CalorieTracking.Infrastructure/NutriMetrics.Modules.CalorieTracking.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/NutriMetrics.Modules.Identity.Application/NutriMetrics.Modules.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/NutriMetrics.Modules.Identity.Domain/NutriMetrics.Modules.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/NutriMetrics.Modules.Identity.Infrastructure/NutriMetrics.Modules.Identity.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/NutriMetrics.Shared.Domain/NutriMetrics.Shared.Domain.csproj" />
     <Project Path="src/Shared/NutriMetrics.Shared.Infrastructure/NutriMetrics.Shared.Infrastructure.csproj" />

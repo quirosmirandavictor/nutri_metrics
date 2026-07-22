@@ -9,11 +9,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\CalorieTracking\NutriMetrics.Modules.CalorieTracking.Infrastructure\NutriMetrics.Modules.CalorieTracking.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\CalorieTracking\NutriMetrics.Modules.CalorieTracking.Application\NutriMetrics.Modules.CalorieTracking.Application.csproj" />
+    <ProjectReference Include="..\Modules\Identity\NutriMetrics.Modules.Identity.Infrastructure\NutriMetrics.Modules.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

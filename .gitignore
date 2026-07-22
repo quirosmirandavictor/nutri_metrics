@@ -1,5 +1,5 @@
 ## ============================================
-## .gitignore for NutriMetrics (.NET 10)
+## .gitignore for NutriMetrics (.NET)
 ## ============================================
 
 # 1. .NET build files and binaries
@@ -7,26 +7,28 @@ bin/
 obj/
 log/
 logs/
+*.rsuser
+*.suo
 *.user
 *.userosscache
 *.sln.docstates
 
 # 2. Secrets and Sensitive Configuration Files
-# NOTE: Your User Secrets are already stored outside the repository,
-# but these patterns protect other potential local key files.
-appsettings.Development.json
+# Protection for local settings, keys and environment variables
 appsettings.Local.json
-appsettings.*.json
+appsettings.Development.local.json
 !appsettings.json
+!appsettings.Development.json
 !appsettings.Development.json.example
 *.env
-*.env.local
+*.env.*
 *.pem
 *.key
 *.pfx
 
 # 3. Development environment and editors (VS Code, Visual Studio, Rider)
-.vscode/
+# VS Code
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -71,7 +73,9 @@ appsettings.*.json
 ehthumbs.db
 Thumbs.db
 
-# 5. Entity Framework / Migrations (if applicable: temp/cache)
+# 5. Local Databases and SQLite
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
