@@ -4,6 +4,7 @@
 [![Architecture: Clean](https://img.shields.io/badge/Architecture-Clean%20DDD-1F8A70)](#architecture--clean-design)
 [![Pattern: CQRS](https://img.shields.io/badge/Pattern-CQRS%20%2B%20MediatR-blue)](#architecture--clean-design)
 [![Auth: JWT](https://img.shields.io/badge/Auth-JWT%20Bearer-orange)](#-authentication--authorization)
+[![API Docs: Swagger](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?logo=swagger&logoColor=white)](#-api-documentation-swagger)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -632,6 +633,35 @@ GET /api/food/search?query=2 manzanas y 100g de pechuga de pollo
 
 ---
 
+## 📘 API Documentation (Swagger)
+
+The project exposes interactive API documentation through **Swagger UI**, generated from the native .NET 10 OpenAPI document.
+
+Available **in the development environment only**.
+
+### Access
+
+With the project running (`dotnet run --project src/NutriMetrics.Api/NutriMetrics.Api.csproj`), open in your browser: http://localhost:[port]/swagger (example http://localhost:5162/swagger)
+
+From there you can:
+
+- View all available endpoints, grouped by controller
+- Try out requests directly from the browser
+- Inspect the request/response models for each endpoint
+
+### Authentication in Swagger UI
+
+Endpoints protected with `[Authorize]` require a valid JWT. To test them from Swagger:
+
+1. Log in via `POST /api/auth/login` (or register with `POST /api/auth/register`) and copy the `token` from the response
+2. Click **Authorize** 🔒 at the top of the interface
+3. Paste the token (without the `Bearer ` prefix) and confirm
+4. From then on, all protected requests are executed with that token
+
+The raw OpenAPI document (JSON) is also available directly at:
+http://localhost:[port]/openapi/v1.json (example http://localhost:5162/openapi/v1.json)
+
+---
 ## 🎯 Design Goals
 
 The project aims to demonstrate:
