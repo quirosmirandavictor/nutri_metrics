@@ -37,4 +37,11 @@ public class FoodItemRepository : IFoodItemRepository
         return await _dbContext.FoodItems
             .FirstOrDefaultAsync(f => f.Id == itemId && f.UserId == userId, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<FoodItem>> GetFoodItemsByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.FoodItems
+            .Where(f => f.UserId == userId && f.CreatedAt >= startDate && f.CreatedAt <= endDate)
+            .ToListAsync(cancellationToken);
+    }
 }

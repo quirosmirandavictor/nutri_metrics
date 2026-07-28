@@ -5,7 +5,7 @@ namespace NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.Ad
 // Request DTO recibido desde la API
 public record AddFoodItemRequest(string Name, double Calories, double Protein, double Carbs, double Fat, DateTime? CreatedAt = null);
 
-// Command para MediatR que retorna el ID del elemento creado
+// Command for MediatR that returns the ID of the created item
 public record AddFoodItemCommand(
     string Name, 
     double Calories, 

@@ -4,6 +4,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.SearchFood;
+using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.GetFoodItemsByDateRange;
+using System.Security.Claims;
 using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.AddFoodItem;
 
 [ApiController]
@@ -48,6 +50,33 @@ public class FoodController : ControllerBase
         }
 
         var result = await _mediator.Send(new SearchFoodQuery(query), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("by-date-range")]
+    public async Task<IActionResult> GetByDateRange(
+        [FromQuery] DateTime startDate, 
+        [FromQuery] DateTime endDate, 
+        CancellationToken cancellationToken)
+    {
+        // 1. Extract and validate the UserId from the JWT token
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized("User not authenticated or invalid token.");
+        }
+
+        // 2. Validate the dates
+        if (startDate > endDate)
+        {
+            return BadRequest("The start date cannot be later than the end date.");
+        }
+
+        // 3. Create the Query with the UserId and send it with MediatR
+        var query = new GetFoodItemsByDateRangeQuery(userId, startDate, endDate);
+        var result = await _mediator.Send(query, cancellationToken);
+
         return Ok(result);
     }
 }

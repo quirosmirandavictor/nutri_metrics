@@ -8,4 +8,6 @@ public interface IFoodItemRepository
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<FoodItem>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<FoodItem?> GetByIdAndUserAsync(Guid itemId, Guid userId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<FoodItem>> GetFoodItemsByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
 }
