@@ -52,31 +52,94 @@ The project strictly follows **Clean Architecture** and **CQRS**, ensuring the d
    - Application: `AddFoodItemCommand`, `SearchFoodQuery`
    - Infrastructure: `CalorieTrackingDbContext`, `CalorieNinjasHttpClient`
 
-### Request Flow — Search Food Example
+### Request Flow — Identity (Register / Login)
 
 ```mermaid
 graph TD
     subgraph Host["NutriMetrics.Api (Presentation Layer)"]
         Client([Client / Postman / cURL])
-        Controller[FoodController]
+        AuthController[AuthController]
     end
 
-    subgraph Application["NutriMetrics.Modules.CalorieTracking.Application"]
+    subgraph Application["NutriMetrics.Modules.Identity.Application"]
         Mediator{MediatR / ISender}
-        Handler[SearchFoodQueryHandler]
-        ResponseDTO[FoodItemResponse DTO]
+        RegisterHandler[RegisterCommandHandler]
+        LoginHandler[LoginCommandHandler]
+    end
+
+    subgraph Domain["NutriMetrics.Modules.Identity.Domain"]
+        UserEntity[User Entity]
+        RoleEntity[Role Entity]
+    end
+
+    subgraph Infrastructure["NutriMetrics.Modules.Identity.Infrastructure"]
+        IdentityDb[(IdentityDbContext)]
+        JwtService[JwtTokenService]
+    end
+
+    Client -->|"1. POST /api/auth/register or /login"| AuthController
+    AuthController -->|"2. Send(RegisterCommand / LoginCommand)"| Mediator
+    Mediator -->|"3. Dispatches to"| RegisterHandler
+    Mediator -->|"3. Dispatches to"| LoginHandler
+
+    RegisterHandler -->|"4. Creates"| UserEntity
+    RegisterHandler -->|"5. Persists via"| IdentityDb
+    LoginHandler -->|"4. Validates credentials via"| IdentityDb
+
+    RegisterHandler -->|"6. Generates token"| JwtService
+    LoginHandler -->|"5. Generates token"| JwtService
+
+    UserEntity -.->|"Belongs to"| RoleEntity
+
+    JwtService -->|"7. Returns JWT"| RegisterHandler
+    JwtService -->|"6. Returns JWT"| LoginHandler
+    RegisterHandler -->|"8. Maps to AuthResponse"| AuthController
+    LoginHandler -->|"7. Maps to AuthResponse"| AuthController
+    AuthController -->|"9. HTTP 200 OK (JWT + userId)"| Client
+
+    classDef host fill:#e1f5fe,stroke:#0288d1,stroke-width:1.5px;
+    classDef app fill:#e8f5e9,stroke:#388e3c,stroke-width:1.5px;
+    classDef domain fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef infra fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px;
+
+    class Host host;
+    class Application app;
+    class Domain domain;
+    class Infrastructure infra;
+```
+
+### Request Flow — Food Item Tracking (CQRS: Commands & Queries)
+
+```mermaid
+graph TD
+    subgraph Host["NutriMetrics.Api (Presentation Layer)"]
+        Client([Client / Postman / cURL])
+        FoodController[FoodController]
+    end
+
+    subgraph Commands["Application — Commands"]
+        Mediator{MediatR / ISender}
+        AddHandler[AddFoodItemCommandHandler]
+        DeleteHandler[DeleteFoodItemCommandHandler]
+    end
+
+    subgraph Queries["Application — Queries"]
+        SearchHandler[SearchFoodQueryHandler]
+        DateRangeHandler[GetFoodItemsByDateRangeQueryHandler]
     end
 
     subgraph Domain["NutriMetrics.Modules.CalorieTracking.Domain"]
         Entity[FoodItem Entity]
+        RepoContract[["IFoodItemRepository (Interface)"]]
         NutritionContract[["INutritionApiClient (Interface)"]]
         TranslationContract[["ITranslationService (Interface)"]]
     end
 
     subgraph Infrastructure["NutriMetrics.Modules.CalorieTracking.Infrastructure"]
-        HttpClient[CalorieNinjasHttpClient]
+        Repository[FoodItemRepository]
+        CalorieDb[(CalorieTrackingDbContext)]
+        NutritionHttpClient[CalorieNinjasHttpClient]
         TranslateService[GoogleTranslationService]
-        ExternalDTOs[CalorieNinjas DTOs]
     end
 
     subgraph External["External APIs"]
@@ -84,36 +147,55 @@ graph TD
         CalorieNinjasAPI["CalorieNinjas API"]
     end
 
-    Client -->|"1. GET /api/food/search?query=..."| Controller
-    Controller -->|"2. Send(SearchFoodQuery)"| Mediator
-    Mediator -->|"3. Dispatches to"| Handler
-    Handler -->|"4. Calls"| NutritionContract
+    Client -->|"1. POST /api/food (Add)"| FoodController
+    Client -->|"1. DELETE /api/food/{id}"| FoodController
+    Client -->|"1. GET /api/food/search?query="| FoodController
+    Client -->|"1. GET /api/food?from=&to= (Date Range)"| FoodController
 
-    HttpClient -->|"Implements"| NutritionContract
+    FoodController -->|"2. Send(Command/Query)"| Mediator
+    Mediator -->|"3. Dispatches"| AddHandler
+    Mediator -->|"3. Dispatches"| DeleteHandler
+    Mediator -->|"3. Dispatches"| SearchHandler
+    Mediator -->|"3. Dispatches"| DateRangeHandler
+
+    Repository -->|"Implements"| RepoContract
+    NutritionHttpClient -->|"Implements"| NutritionContract
     TranslateService -->|"Implements"| TranslationContract
 
-    Handler -->|"5. SearchFoodAsync()"| HttpClient
-    HttpClient -->|"6. TranslateToEnglishAsync()"| TranslateService
-    TranslateService -->|"7. Translation Request"| GoogleAPI
+    AddHandler -->|"4. Creates & persists"| RepoContract
+    DeleteHandler -->|"4. Validates ownership & removes"| RepoContract
+    DateRangeHandler -->|"4. Queries by UserId + date range"| RepoContract
+    RepoContract -.-> Entity
+
+    SearchHandler -->|"4. TranslateToEnglishAsync()"| TranslationContract
+    TranslationContract --> TranslateService
+    TranslateService -->|"5. Translation Request"| GoogleAPI
     GoogleAPI -->|"Returns translated text"| TranslateService
 
-    HttpClient -->|"8. HTTP GET v1/nutrition"| CalorieNinjasAPI
-    CalorieNinjasAPI -->|"Returns JSON"| ExternalDTOs
-    ExternalDTOs -->|"9. Deserializes & Maps to"| Entity
+    SearchHandler -->|"6. SearchFoodAsync()"| NutritionContract
+    NutritionContract --> NutritionHttpClient
+    NutritionHttpClient -->|"7. HTTP GET v1/nutrition"| CalorieNinjasAPI
+    CalorieNinjasAPI -->|"Returns JSON"| NutritionHttpClient
+    NutritionHttpClient -->|"8. Deserializes & Maps to"| Entity
 
-    Entity -->|"Returns FoodItem Entities"| Handler
-    Handler -->|"10. Maps to"| ResponseDTO
-    ResponseDTO -->|"Returns IEnumerable"| Controller
-    Controller -->|"11. HTTP 200 OK (JSON)"| Client
+    Repository -->|"EF Core Reads/Writes"| CalorieDb
+
+    AddHandler -->|"9. Returns Id"| FoodController
+    DeleteHandler -->|"9. Returns Id"| FoodController
+    SearchHandler -->|"9. Maps to FoodItemResponse"| FoodController
+    DateRangeHandler -->|"9. Maps to IEnumerable<FoodItemResponse>"| FoodController
+    FoodController -->|"10. HTTP 200 OK (JSON)"| Client
 
     classDef host fill:#e1f5fe,stroke:#0288d1,stroke-width:1.5px;
-    classDef app fill:#e8f5e9,stroke:#388e3c,stroke-width:1.5px;
+    classDef cmd fill:#ffebee,stroke:#c62828,stroke-width:1.5px;
+    classDef qry fill:#e8f5e9,stroke:#388e3c,stroke-width:1.5px;
     classDef domain fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
     classDef infra fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px;
     classDef ext fill:#eceff1,stroke:#607d8b,stroke-width:1.5px;
 
     class Host host;
-    class Application app;
+    class Commands cmd;
+    class Queries qry;
     class Domain domain;
     class Infrastructure infra;
     class External ext;
