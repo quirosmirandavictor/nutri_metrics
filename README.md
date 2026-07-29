@@ -128,6 +128,20 @@ The module communicates with external providers through abstractions defined in 
 
 ---
 
+### 🗺️ C4 Model Diagrams
+
+The architecture is documented using the [C4 Model](https://c4model.com/), providing a progressive zoom from system context down to component-level detail. Diagrams were generated with [Structurizr](https://structurizr.com/).
+
+| Level | Diagram | Description |
+|-------|---------|--------------|
+| **C1 — Context** | ![C1 Context](docs/diagrams/images/c1-context.png) | High-level view of NutriMetrics, its users, and external systems (CalorieNinjas, Translation Provider) |
+| **C2 — Container** | ![C2 Container](docs/diagrams/images/c2-container.png) | Deployable units: Web App (React), NutriMetrics.Api, and MySQL Database |
+| **C3 — Component** | ![C3 Component](docs/diagrams/images/c3-api.png) | Internal components of `NutriMetrics.Api`: Identity Module and CalorieTracking Module |
+
+> Diagram source files (DSL) are available in `docs/diagrams/` and can be edited via [Structurizr Playground](https://playground.structurizr.com/).
+
+---
+
 ## 📂 Solution Structure
 
 ```text
