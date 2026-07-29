@@ -10,4 +10,7 @@ public interface IFoodItemRepository
     Task<FoodItem?> GetByIdAndUserAsync(Guid itemId, Guid userId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<FoodItem>> GetFoodItemsByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
+
+    Task<FoodItem?> GetByIdAsync(Guid itemId, Guid userId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(FoodItem foodItem, CancellationToken cancellationToken = default);
 }

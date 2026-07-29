@@ -7,6 +7,7 @@ using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.SearchF
 using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.GetFoodItemsByDateRange;
 using System.Security.Claims;
 using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.AddFoodItem;
+using NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.DeleteFoodItem;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -78,5 +79,21 @@ public class FoodController : ControllerBase
         var result = await _mediator.Send(query, cancellationToken);
 
         return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteFoodItem([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        // 1. Extract and validate the UserId from the JWT token
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized("User not authenticated or invalid token.");
+        }
+
+        var command = new DeleteFoodItemCommand(id, userId);
+        var deletedId = await _mediator.Send(command, cancellationToken);
+        return Ok(new { id = deletedId });
     }
 }

@@ -44,4 +44,16 @@ public class FoodItemRepository : IFoodItemRepository
             .Where(f => f.UserId == userId && f.CreatedAt >= startDate && f.CreatedAt <= endDate)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<FoodItem?> GetByIdAsync(Guid itemId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.FoodItems
+            .FirstOrDefaultAsync(f => f.Id == itemId && f.UserId == userId, cancellationToken);
+    }
+
+    public async Task DeleteAsync(FoodItem foodItem,  CancellationToken cancellationToken = default)
+    {
+        _dbContext.FoodItems.Remove(foodItem);
+        await Task.CompletedTask;
+    }
 }
