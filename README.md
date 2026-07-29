@@ -147,37 +147,36 @@ The architecture is documented using the [C4 Model](https://c4model.com/), provi
 ```text
 NUTRI_METRICS/
 │
+├── docs/                                      # Architecture diagrams and documentation assets
+│   └── diagrams/                              # C1/C2/C3 DSL and image files
+│
 ├── src/
 │   ├── Modules/
 │   │   ├── Identity/
-│   │   │   ├── NutriMetrics.Modules.Identity.Domain/          # User, Role entities
-│   │   │   ├── NutriMetrics.Modules.Identity.Application/     # RegisterCommand, LoginCommand
-│   │   │   └── NutriMetrics.Modules.Identity.Infrastructure/  # DbContext, Services, Migrations
+│   │   │   ├── NutriMetrics.Modules.Identity.Application/   # Registration and authentication commands
+│   │   │   ├── NutriMetrics.Modules.Identity.Domain/         # User and role entities
+│   │   │   └── NutriMetrics.Modules.Identity.Infrastructure/  # Identity services, DbContext, and related infrastructure
 │   │   │
 │   │   └── CalorieTracking/
-│   │       ├── NutriMetrics.Modules.CalorieTracking.Domain/          # FoodItem entity
-│   │       ├── NutriMetrics.Modules.CalorieTracking.Application/     # CQRS Queries, Handlers & DTOs
-│   │       │   └── FoodItems/
-│   │       │       └── Queries/
-│   │       │           └── SearchFood/
-│   │       │               ├── FoodItemResponse.cs
-│   │       │               └── SearchFoodQuery.cs
-│   │       └── NutriMetrics.Modules.CalorieTracking.Infrastructure/  # DbContext, Repositories, external clients, Migrations
+│   │       ├── NutriMetrics.Modules.CalorieTracking.Application/   # CQRS handlers, queries, and DTOs
+│   │       ├── NutriMetrics.Modules.CalorieTracking.Domain/         # Food item domain models and contracts
+│   │       └── NutriMetrics.Modules.CalorieTracking.Infrastructure/  # Repositories, EF configuration, and external integrations
 │   │
-│   ├── NutriMetrics.Api/                       # Entry Point Host & Presentation Layer
-│   │   ├── Controllers/
-│   │   │   └── FoodController.cs
-│   │   ├── Properties/
+│   ├── NutriMetrics.Api/                      # API entry point and presentation layer
+│   │   ├── Controllers/                      # HTTP controllers for auth and food endpoints
+│   │   ├── Extensions/                       # Extension methods and helpers
+│   │   ├── Properties/                       # Launch settings and project properties
 │   │   ├── appsettings.Development.json
 │   │   ├── appsettings.json
 │   │   ├── NutriMetrics.Api.csproj
 │   │   ├── NutriMetrics.Api.http
 │   │   └── Program.cs
 │   │
-│   └── Shared/                                 # Shared Kernel & Infrastructure Assets
+│   └── Shared/                               # Shared domain and infrastructure components
 │       ├── NutriMetrics.Shared.Domain/
 │       └── NutriMetrics.Shared.Infrastructure/
 │
+├── LICENSE
 ├── NutriMetrics.slnx
 └── README.md
 ```
