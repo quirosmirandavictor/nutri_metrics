@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API: Launch (http profile)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/NutriMetrics.Api/NutriMetrics.Api.csproj",
+      "launchProfile": "http",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": "API: Launch (coreclr fallback)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api-debug",
+      "program": "${workspaceFolder}/src/NutriMetrics.Api/bin/Debug/net10.0/NutriMetrics.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/NutriMetrics.Api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5162"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      }
+    }
+  ]
+}

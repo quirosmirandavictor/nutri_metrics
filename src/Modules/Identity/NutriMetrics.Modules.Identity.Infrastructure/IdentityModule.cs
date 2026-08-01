@@ -19,7 +19,10 @@ public static class IdentityModule
         // 1. Database Configuration
         var connectionString = configuration.GetConnectionString("Default") 
             ?? throw new InvalidOperationException("ConnectionString 'Default' not found in configuration");
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        var configuredServerVersion = configuration["Database:MySqlServerVersion"];
+        var serverVersion = string.IsNullOrWhiteSpace(configuredServerVersion)
+            ? ServerVersion.AutoDetect(connectionString)
+            : new MySqlServerVersion(Version.Parse(configuredServerVersion));
         
         services.AddDbContext<IdentityDbContext>(options =>
             options.UseMySql(connectionString, serverVersion)

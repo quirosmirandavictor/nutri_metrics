@@ -22,6 +22,7 @@ appsettings.Development.local.json
 !appsettings.Development.json.example
 *.env
 *.env.*
+!.env.example
 *.pem
 *.key
 *.pfx

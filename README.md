@@ -139,11 +139,11 @@ graph TD
         Repository[FoodItemRepository]
         CalorieDb[(CalorieTrackingDbContext)]
         NutritionHttpClient[CalorieNinjasHttpClient]
-        TranslateService[GoogleTranslationService]
+        TranslateService[LibreTranslateTranslationService]
     end
 
     subgraph External["External APIs"]
-        GoogleAPI["Translation Provider"]
+        LibreTranslateAPI["LibreTranslate API"]
         CalorieNinjasAPI["CalorieNinjas API"]
     end
 
@@ -169,8 +169,8 @@ graph TD
 
     SearchHandler -->|"4. TranslateToEnglishAsync()"| TranslationContract
     TranslationContract --> TranslateService
-    TranslateService -->|"5. Translation Request"| GoogleAPI
-    GoogleAPI -->|"Returns translated text"| TranslateService
+    TranslateService -->|"5. Translation Request"| LibreTranslateAPI
+    LibreTranslateAPI -->|"Returns translated text"| TranslateService
 
     SearchHandler -->|"6. SearchFoodAsync()"| NutritionContract
     NutritionContract --> NutritionHttpClient
@@ -205,7 +205,7 @@ graph TD
 
 The module communicates with external providers through abstractions defined in the Domain layer, keeping the application independent from specific providers:
 
-- **GoogleTranslateFreeApi** — implements `ITranslationService`
+- **LibreTranslate API** — implements `ITranslationService` (containerized translation service)
 - **CalorieNinjas API** — implements `INutritionApiClient`
 
 ---
@@ -216,7 +216,7 @@ The architecture is documented using the [C4 Model](https://c4model.com/), provi
 
 | Level | Diagram | Description |
 |-------|---------|--------------|
-| **C1 — Context** | ![C1 Context](docs/diagrams/images/c1-context.png) | High-level view of NutriMetrics, its users, and external systems (CalorieNinjas, Translation Provider) |
+| **C1 — Context** | ![C1 Context](docs/diagrams/images/c1-context.png) | High-level view of NutriMetrics, its users, and external systems (CalorieNinjas, LibreTranslate API) |
 | **C2 — Container** | ![C2 Container](docs/diagrams/images/c2-container.png) | Deployable units: Web App (React), NutriMetrics.Api, and MySQL Database |
 | **C3 — Component** | ![C3 Component](docs/diagrams/images/c3-api.png) | Internal components of `NutriMetrics.Api`: Identity Module and CalorieTracking Module |
 
@@ -583,50 +583,177 @@ public class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
 
 ### Prerequisites
 
-- **.NET SDK 10.0** or higher
-- **MySQL 8.0** or higher
+- **Docker Desktop** (or Docker Engine + Compose)
+- **.NET SDK 10.0** or higher (for local non-container runs and tests)
 - **PowerShell** or **Bash** terminal
 
-### Installation
+### Option A: Docker (Recommended)
 
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/yourusername/nutri_metrics.git
-   cd nutri_metrics
-   ```
+1. **Clone the repository**
+  ```bash
+  git clone https://github.com/yourusername/nutri_metrics.git
+  cd nutri_metrics
+  ```
 
-2. **Configure database** in `src/NutriMetrics.Api/appsettings.json`
-   ```json
-   {
-     "ConnectionStrings": {
-       "Default": "Server=localhost;Port=3306;Database=nutrimetrics_calorietracking;User=root;Password=your_pass_here;"
-     }
-   }
-   ```
+2. **Create environment file from template**
+  ```bash
+  cp .env.example .env
+  ```
 
-3. **Apply migrations**
-   ```bash
-   dotnet ef database update --startup-project src/NutriMetrics.Api --context CalorieTrackingDbContext
-   dotnet ef database update --startup-project src/NutriMetrics.Api --context IdentityDbContext
-   ```
+  On PowerShell, use:
+  ```powershell
+  Copy-Item .env.example .env
+  ```
 
-4. **Run the API**
-   ```bash
-   dotnet run --project src/NutriMetrics.Api/NutriMetrics.Api.csproj
-   ```
+3. **Set secure values** in `.env` (at minimum `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `CALORIE_NINJAS_API_KEY`)
 
-   API will be available at: `http://localhost:5162`
+4. **Start local profile** (API + MySQL)
+  ```bash
+  docker compose up --build -d
+  ```
 
-### Building & Testing
+5. **Verify API**
+  - API base URL: `http://localhost:8080`
+  - Swagger (Development profile): `http://localhost:8080/swagger`
+
+6. **Stop stack**
+  ```bash
+  docker compose down
+  ```
+
+### Option B: Production-like Docker Profile
+
+Use this profile to validate production-oriented behavior with environment-based secrets.
 
 ```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
+Stop it with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+```
+
+### Option C: Run Without Docker
+
+1. Configure local MySQL and set `ConnectionStrings:Default`.
+2. Configure secrets with user-secrets or environment variables.
+3. Run:
+  ```bash
+  dotnet run --project src/NutriMetrics.Api/NutriMetrics.Api.csproj
+  ```
+
+---
+
+## 🔐 Secrets Management
+
+This project currently uses `UserSecretsId` in the API project for local development.
+
+- `dotnet user-secrets` works for local non-container runs.
+- `dotnet user-secrets` does **not** flow automatically into Docker containers.
+- Containers use environment variables from `.env` and Compose mappings.
+
+Sensitive keys expected at runtime:
+
+- `ConnectionStrings__Default`
+- `Jwt__Secret`
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `Jwt__ExpirationMinutes`
+- `CalorieNinjas__ApiKey`
+- `Http__UseHttpsRedirection` (set to `false` for HTTP-only container runs)
+
+Do not commit real values to source control.
+
+---
+
+## 🗃️ Database Initialization In Containers
+
+At startup, the API now:
+
+1. Applies EF Core migrations for **IdentityDbContext**
+2. Applies EF Core migrations for **CalorieTrackingDbContext**
+3. Optionally seeds an initial test API user (idempotent)
+
+Seed configuration keys:
+
+- `Seed__EnableTestUser`
+- `Seed__TestUser__Email`
+- `Seed__TestUser__Password`
+
+Recommended:
+
+- Enable seed only in local/dev and dedicated test environments.
+- Disable seed by default in production-like environments.
+
+---
+
+## 🧪 Testing Strategy (Unit / Integration / E2E)
+
+The repository now includes three test projects with a first executable baseline for FoodController-related scenarios:
+
+- `tests/NutriMetrics.Modules.CalorieTracking.Application.Tests`
+- `tests/NutriMetrics.Api.IntegrationTests`
+- `tests/NutriMetrics.Api.E2eTests`
+
+### Unit Tests (Application + Controller Behavior)
+
+Focus on `FoodController` and its related handlers:
+
+- `POST /api/food` validation and command dispatch
+- `GET /api/food/search` query validation and dispatch
+- `GET /api/food/by-date-range` user claim/date-range validation
+- `DELETE /api/food/{id}` user claim extraction and command dispatch
+
+Critical unit scenarios:
+
+- Unauthorized when `ClaimTypes.NameIdentifier` is missing/invalid
+- Bad request for empty food name and invalid date range
+- Correct command/query dispatch through MediatR
+
+### Integration Tests (API + In-Memory Database)
+
+Current integration tests use `WebApplicationFactory` plus in-memory EF Core providers to validate API pipeline behavior deterministically:
+
+- Authenticated flow: login/register then Food endpoints
+- Endpoint authorization behavior for FoodController
+- Request/response flow through MediatR handlers
+
+For real MySQL verification, use the Docker smoke and E2E steps below.
+
+### E2E Tests (Full Docker Stack)
+
+Validate full journey against running Compose stack:
+
+1. Register/Login
+2. Add food item
+3. Search nutrition data
+4. Query by date range
+5. Delete food item
+
+This E2E scope is explicitly based on `FoodController` behavior and JWT-protected routes.
+
+### Build & Verification Commands
+
+```bash
+# Build solution
 dotnet build
 
-# View current migrations
-dotnet ef migrations list --startup-project src/NutriMetrics.Api --context CalorieTrackingDbContext
+# Unit tests
+dotnet test tests/NutriMetrics.Modules.CalorieTracking.Application.Tests/NutriMetrics.Modules.CalorieTracking.Application.Tests.csproj
 
-# Check migration status
-dotnet ef database info --startup-project src/NutriMetrics.Api --context CalorieTrackingDbContext
+# Integration tests
+dotnet test tests/NutriMetrics.Api.IntegrationTests/NutriMetrics.Api.IntegrationTests.csproj
+
+# Start local docker stack
+docker compose up --build -d
+
+# E2E tests against Docker stack
+NUTRIMETRICS_E2E_BASE_URL=http://localhost:8080 dotnet test tests/NutriMetrics.Api.E2eTests/NutriMetrics.Api.E2eTests.csproj
+
+# Stop local docker stack
+docker compose down
 ```
 
 ---
@@ -724,7 +851,12 @@ GET /api/food/search?query=2 manzanas y 100g de pechuga de pollo
 **External APIs**
 - HttpClientFactory (built-in)
 - CalorieNinjas Nutrition API
-- GoogleTranslateFreeApi
+- LibreTranslate API
+
+### Security Note on Dependencies
+
+- `Newtonsoft.Json` and `Microsoft.Extensions.Caching.Memory` were explicitly upgraded to newer safe versions through project/package overrides.
+- OpenAPI generation was migrated to the Swashbuckle stack, keeping Swagger UI while removing the previously vulnerable dependency chain from this project.
 
 ---
 

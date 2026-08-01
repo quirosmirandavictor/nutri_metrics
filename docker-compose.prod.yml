@@ -1,0 +1,60 @@
+services:
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    container_name: nutrimetrics-libretranslate-prod
+    restart: always
+    environment:
+      LT_DISABLE_WEB_UI: "true"
+      LT_LOAD_ONLY: en,es
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/languages', timeout=5)"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  mysql:
+    image: mysql:8.4
+    container_name: nutrimetrics-mysql-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nutrimetrics_calorietracking}
+    volumes:
+      - nutrimetrics_mysql_prod_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nutrimetrics-api-prod
+    restart: always
+    depends_on:
+      libretranslate:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-nutrimetrics_calorietracking};User=root;Password=${MYSQL_ROOT_PASSWORD};
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER:-NutriMetrics.Api}
+      Jwt__Audience: ${JWT_AUDIENCE:-NutriMetrics.Client}
+      Jwt__ExpirationMinutes: ${JWT_EXPIRATION_MINUTES:-60}
+      CalorieNinjas__ApiKey: ${CALORIE_NINJAS_API_KEY}
+      Translation__LibreTranslate__BaseUrl: ${LIBRETRANSLATE_BASE_URL:-http://libretranslate:5000}
+      Translation__LibreTranslate__ApiKey: ${LIBRETRANSLATE_API_KEY:-}
+      Seed__EnableTestUser: ${SEED_ENABLE_TEST_USER:-false}
+      Seed__TestUser__Email: ${SEED_TEST_USER_EMAIL:-}
+      Seed__TestUser__Password: ${SEED_TEST_USER_PASSWORD:-}
+
+volumes:
+  nutrimetrics_mysql_prod_data:

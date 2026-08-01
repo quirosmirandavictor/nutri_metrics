@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace NutriMetrics.Modules.CalorieTracking.Infrastructure.Database;
+namespace NutriMetrics.Modules.Identity.Infrastructure.Database;
 
-public class CalorieTrackingDbContextFactory : IDesignTimeDbContextFactory<CalorieTrackingDbContext>
+public class IdentityDbContextFactory : IDesignTimeDbContextFactory<IdentityDbContext>
 {
-    public CalorieTrackingDbContext CreateDbContext(string[] args)
+    public IdentityDbContext CreateDbContext(string[] args)
     {
         var apiConfigPath = ResolveApiConfigPath();
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
@@ -26,15 +26,14 @@ public class CalorieTrackingDbContextFactory : IDesignTimeDbContextFactory<Calor
 
         var configuration = configurationBuilder.Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<CalorieTrackingDbContext>();
-
         var connectionString = ResolveConnectionString(configuration);
-        
+
         var serverVersion = ServerVersion.AutoDetect(connectionString);
 
+        var optionsBuilder = new DbContextOptionsBuilder<IdentityDbContext>();
         optionsBuilder.UseMySql(connectionString, serverVersion);
 
-        return new CalorieTrackingDbContext(optionsBuilder.Options);
+        return new IdentityDbContext(optionsBuilder.Options);
     }
 
     private static string ResolveApiConfigPath()

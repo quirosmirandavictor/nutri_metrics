@@ -16,7 +16,10 @@ public static class CalorieTrackingModule
         // 1. Database Configuration
         var connectionString = configuration.GetConnectionString("Default") 
             ?? throw new InvalidOperationException("ConnectionString 'Default' not found in configuration");
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        var configuredServerVersion = configuration["Database:MySqlServerVersion"];
+        var serverVersion = string.IsNullOrWhiteSpace(configuredServerVersion)
+            ? ServerVersion.AutoDetect(connectionString)
+            : new MySqlServerVersion(Version.Parse(configuredServerVersion));
         
         services.AddDbContext<CalorieTrackingDbContext>(options =>
             options.UseMySql(connectionString, serverVersion)
@@ -29,7 +32,17 @@ public static class CalorieTrackingModule
         );
 
         // 3. Injection of Services
-        services.AddSingleton<ITranslationService, GoogleTranslationService>();
+        services.AddHttpClient<ITranslationService, LibreTranslateTranslationService>(client =>
+        {
+            var baseUrl = configuration["Translation:LibreTranslate:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            }
+
+            var timeoutMs = configuration.GetValue("Translation:LibreTranslate:TimeoutMs", 5000);
+            client.Timeout = TimeSpan.FromMilliseconds(timeoutMs);
+        });
         services.AddHttpClient<INutritionApiClient, CalorieNinjasHttpClient>(client =>
         {
             client.BaseAddress = new Uri("https://api.calorieninjas.com");

@@ -17,4 +17,9 @@
     <Project Path="src/Shared/NutriMetrics.Shared.Domain/NutriMetrics.Shared.Domain.csproj" />
     <Project Path="src/Shared/NutriMetrics.Shared.Infrastructure/NutriMetrics.Shared.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NutriMetrics.Api.E2eTests/NutriMetrics.Api.E2eTests.csproj" />
+    <Project Path="tests/NutriMetrics.Api.IntegrationTests/NutriMetrics.Api.IntegrationTests.csproj" />
+    <Project Path="tests/NutriMetrics.Modules.CalorieTracking.Application.Tests/NutriMetrics.Modules.CalorieTracking.Application.Tests.csproj" />
+  </Folder>
 </Solution>

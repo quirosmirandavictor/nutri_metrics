@@ -1,28 +1,40 @@
 using NutriMetrics.Modules.CalorieTracking.Infrastructure;
 using NutriMetrics.Modules.Identity.Infrastructure;
-using Microsoft.OpenApi; 
+using Microsoft.OpenApi;
+using NutriMetrics.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- DI Container ---
 builder.Services.AddControllers();
-builder.Services.AddOpenApi(options =>
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
-{
-    document.Components ??= new OpenApiComponents();
-    document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>(); // ← agregar esta línea
-
-    document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+    var bearerSecurityScheme = new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresá tu JWT token (sin 'Bearer ' delante)"
+        Name = "Authorization",
+        Description = "Ingresa tu JWT token (sin 'Bearer ' delante)"
     };
-    return Task.CompletedTask;
-});
+
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "NutriMetrics API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", bearerSecurityScheme);
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer", document, string.Empty),
+            new List<string>()
+        }
+    });
 });
 
 // Modules Registration
@@ -32,20 +44,32 @@ builder.Services.AddCalorieTrackingModule(builder.Configuration);
 
 var app = builder.Build();
 
+var autoInitializeDatabase = app.Configuration.GetValue("Database:AutoInitialize", true);
+if (autoInitializeDatabase)
+{
+    await app.InitializeDatabaseAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-     app.UseSwaggerUI(options =>
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "NutriMetrics API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "NutriMetrics API v1");
         options.RoutePrefix = "swagger";
     });
     
 }
 
-app.UseHttpsRedirection();
+var useHttpsRedirection = app.Configuration.GetValue("Http:UseHttpsRedirection", false);
+if (useHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;
