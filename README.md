@@ -254,6 +254,11 @@ NUTRI_METRICS/
 │   │   ├── NutriMetrics.Api.http
 │   │   └── Program.cs
 │   │
+│   ├── Web/                                  # React + Vite frontend (pnpm-managed)
+│   │   ├── src/                              # React application source
+│   │   ├── Dockerfile                        # Frontend container definition (Node + pnpm)
+│   │   └── package.json                      # Frontend scripts and dependencies
+│   │
 │   └── Shared/                               # Shared domain and infrastructure components
 │       ├── NutriMetrics.Shared.Domain/
 │       └── NutriMetrics.Shared.Infrastructure/
@@ -262,6 +267,18 @@ NUTRI_METRICS/
 ├── NutriMetrics.slnx
 └── README.md
 ```
+
+---
+
+## 📚 Architecture Decision Records (ADR)
+
+The project architecture decisions are documented in `docs/adr/`. The table below references the current ADR catalog.
+
+| ADR | File | Summary |
+|-----|------|---------|
+| ADR-001 | `docs/adr/001-adopt-a-monolith-architecture.md` | Chooses a modular monolith as the current deployment model. |
+| ADR-002 | `docs/adr/002-use-clean-architecture.md` | Establishes Clean Architecture with inward dependency flow. |
+| ADR-003 | `docs/adr/003-adopt-cqrs.md` | Adopts CQRS to separate write commands from read queries. |
 
 ---
 
@@ -607,12 +624,15 @@ public class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
 
 3. **Set secure values** in `.env` (at minimum `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `CALORIE_NINJAS_API_KEY`)
 
-4. **Start local profile** (API + MySQL)
+4. **Start local profile** (Web + API + MySQL + LibreTranslate)
   ```bash
   docker compose up --build -d
   ```
 
+  Frontend dependencies are resolved with `pnpm` inside containers. No `npm install` step is required.
+
 5. **Verify API**
+  - Frontend (Vite): `http://localhost:5173`
   - API base URL: `http://localhost:8080`
   - Swagger (Development profile): `http://localhost:8080/swagger`
 

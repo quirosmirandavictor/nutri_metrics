@@ -56,5 +56,19 @@ services:
       Seed__TestUser__Email: ${SEED_TEST_USER_EMAIL:-}
       Seed__TestUser__Password: ${SEED_TEST_USER_PASSWORD:-}
 
+  web:
+    build:
+      context: ./src/Web
+      dockerfile: Dockerfile
+    container_name: nutrimetrics-web-prod
+    restart: always
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_PROXY_TARGET: http://api:8080
+
 volumes:
   nutrimetrics_mysql_prod_data:
