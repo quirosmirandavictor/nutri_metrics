@@ -108,3 +108,184 @@ p {
   color: #4338ca;
   font-weight: 600;
 }
+
+.app-shell {
+  gap: 2rem;
+}
+
+.card--wide {
+  width: min(960px, 100%);
+}
+
+.food-search-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.food-search-form input {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.food-search-form button {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #4338ca;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.food-search-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.food-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.food-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.food-result-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.food-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.food-result-name {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.food-calorie-badge {
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.food-macros {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #4b5563;
+  margin-bottom: 0.6rem;
+}
+
+.food-macro-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+}
+
+.food-serving {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.food-add-button {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #4338ca;
+  border-radius: 8px;
+  background: transparent;
+  color: #4338ca;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.food-add-button:hover {
+  background: #eef2ff;
+}
+
+.food-selection {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1.25rem;
+}
+
+.food-selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.food-selection-empty {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.food-selection-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.food-selection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.food-selection-item-remove {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.food-selection-totals {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #1f2937;
+  background: #eef2ff;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.food-selection-note {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}

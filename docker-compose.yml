@@ -73,6 +73,9 @@ services:
       - "5173:5173"
     environment:
       VITE_PROXY_TARGET: http://api:8080
+    volumes:
+      - ./src/Web:/app
+      - /app/node_modules
 
 volumes:
   nutrimetrics_mysql_data:

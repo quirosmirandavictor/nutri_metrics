@@ -1,4 +1,5 @@
 import { useAuth } from "../features/auth/hooks/useAuth";
+import FoodSearchCard from "../features/food-search/components/FoodSearchCard";
 
 export function DashboardPage() {
   const { session, logout } = useAuth();
@@ -12,6 +13,8 @@ export function DashboardPage() {
           Cerrar sesión
         </button>
       </section>
+
+      <FoodSearchCard />
     </main>
   );
 }

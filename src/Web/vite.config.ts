@@ -12,6 +12,13 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_PROXY_TARGET || "http://localhost:8080",
           changeOrigin: true
         }
+      },
+      watch: {
+        // Bind mounts under Docker (especially on Windows/Mac Docker Desktop)
+        // don't always propagate native fs change events to the container.
+        // Polling guarantees the dev server picks up file changes.
+        usePolling: true,
+        interval: 300
       }
     },
     preview: {
