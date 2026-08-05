@@ -254,10 +254,25 @@ NUTRI_METRICS/
 │   │   ├── NutriMetrics.Api.http
 │   │   └── Program.cs
 │   │
-│   ├── Web/                                  # React + Vite frontend (pnpm-managed)
+│   ├── Web/                                  # React + Vite frontend (pnpm@9.12.1-managed)
 │   │   ├── src/                              # React application source
+│   │   │   ├── components/charts/            # Recharts-based chart components
+│   │   │   ├── features/auth/                # Authentication (pages, hooks, context, schemas)
+│   │   │   ├── features/food-search/         # Food search feature (api, components, hooks)
+│   │   │   ├── pages/                        # Page-level views (Dashboard)
+│   │   │   ├── routes/                       # App routing (AppRouter, ProtectedRoute)
+│   │   │   ├── lib/                          # Shared frontend utilities (httpClient)
+│   │   │   ├── App.tsx
+│   │   │   ├── main.tsx
+│   │   │   └── styles.css
+│   │   ├── vite.config.ts                    # Vite config (dev server + API proxy)
+│   │   ├── tsconfig.json                     # TypeScript base config
+│   │   ├── tsconfig.app.json                 # TypeScript app config
+│   │   ├── pnpm-workspace.yaml               # pnpm workspace configuration
+│   │   ├── pnpm-lock.yaml                    # Dependency lockfile
+│   │   ├── package.json                      # Frontend scripts and deps (react, rhf, router, axios, zod, recharts)
 │   │   ├── Dockerfile                        # Frontend container definition (Node + pnpm)
-│   │   └── package.json                      # Frontend scripts and dependencies
+│   │   └── .env.example                      # Frontend environment variables template
 │   │
 │   └── Shared/                               # Shared domain and infrastructure components
 │       ├── NutriMetrics.Shared.Domain/

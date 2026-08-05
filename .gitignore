@@ -80,5 +80,10 @@ Thumbs.db
 *.db-wal
 *.sqlite
 *.sqlite3
+
+# 6. Azurite local emulator artifacts
+__azurite_db_table__.json
+AzuriteConfig
+
 src/**/*.js
 src/**/*.jsx
