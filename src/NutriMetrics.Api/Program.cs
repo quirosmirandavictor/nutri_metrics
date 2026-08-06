@@ -41,6 +41,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddCalorieTrackingModule(builder.Configuration);
 // builder.Services.AddAnalyticsModule(builder.Configuration);
+builder.Services.AddNutriMetricsObservability(builder.Configuration);
+builder.Logging.AddNutriMetricsLogging(builder.Configuration);
 
 var app = builder.Build();
 

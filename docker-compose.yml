@@ -44,8 +44,14 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
+
+      otel-collector:
+        condition: service_started
+
     ports:
       - "8080:8080"
+
+    
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-nutrimetrics_calorietracking};User=root;Password=${MYSQL_ROOT_PASSWORD:-root_pass_local_only};
@@ -59,6 +65,7 @@ services:
       Seed__EnableTestUser: ${SEED_ENABLE_TEST_USER:-true}
       Seed__TestUser__Email: ${SEED_TEST_USER_EMAIL:-test.user@nutrimetrics.local}
       Seed__TestUser__Password: ${SEED_TEST_USER_PASSWORD:-Test1234!}
+      Otel__Endpoint: http://otel-collector:4317
 
   web:
     build:
@@ -76,6 +83,52 @@ services:
     volumes:
       - ./src/Web:/app
       - /app/node_modules
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./docker/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+      - loki
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./docker/observability/tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./docker/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./docker/observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
 
 volumes:
   nutrimetrics_mysql_data:

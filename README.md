@@ -5,6 +5,8 @@
 [![Pattern: CQRS](https://img.shields.io/badge/Pattern-CQRS%20%2B%20MediatR-blue)](#architecture--clean-design)
 [![Auth: JWT](https://img.shields.io/badge/Auth-JWT%20Bearer-orange)](#-authentication--authorization)
 [![API Docs: Swagger](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?logo=swagger&logoColor=white)](#-api-documentation-swagger)
+[![Observability: OpenTelemetry](https://img.shields.io/badge/Observability-OpenTelemetry-425CC7?logo=opentelemetry&logoColor=white)](#-observability-opentelemetry--grafana)
+[![Dashboards: Grafana](https://img.shields.io/badge/Dashboards-Grafana-F46800?logo=grafana&logoColor=white)](#-observability-opentelemetry--grafana)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -232,6 +234,13 @@ NUTRI_METRICS/
 ├── docs/                                      # Architecture diagrams and documentation assets
 │   └── diagrams/                              # C1/C2/C3 DSL and image files
 │
+├── docker/
+│   └── observability/                         # OpenTelemetry + Grafana stack configuration
+│       ├── otel-collector-config.yaml         # OTel Collector receivers/exporters/pipelines
+│       ├── prometheus.yml                     # Prometheus scrape config (metrics)
+│       ├── tempo.yaml                         # Tempo config (traces)
+│       └── grafana-datasources.yml            # Grafana provisioning: Prometheus, Tempo, Loki
+│
 ├── src/
 │   ├── Modules/
 │   │   ├── Identity/
@@ -330,6 +339,90 @@ FoodItems            -- Tracked food items
 ```
 
 Both `IdentityDbContext` and `CalorieTrackingDbContext` use this same connection string.
+
+---
+
+## 📈 Observability (OpenTelemetry + Grafana)
+
+NutriMetrics ships with a full observability stack based on the three pillars: **traces**, **metrics**, and **logs**, all correlated through [OpenTelemetry](https://opentelemetry.io/) and visualized in [Grafana](https://grafana.com/).
+
+### Stack Overview
+
+NutriMetrics.Api → OTel Collector → ┬→ Tempo (traces)
+├→ Prometheus (metrics)
+└→ Loki (logs)
+↓
+Grafana (visualization)
+
+The API is instrumented via `OpenTelemetryExtensions.cs` (`src/NutriMetrics.Api/Extensions/`), which registers:
+
+- **Tracing**: ASP.NET Core, HttpClient (outbound calls to CalorieNinjas and LibreTranslate), and EF Core instrumentation, plus custom `ActivitySource`s reserved for the `Identity` and `CalorieTracking` modules.
+- **Metrics**: ASP.NET Core, HttpClient, and .NET runtime instrumentation (GC, memory, thread pool).
+- **Logs**: structured logs exported via OpenTelemetry logging provider, correlated with trace context.
+
+All telemetry is exported over OTLP to the **OpenTelemetry Collector**, which fans it out to the appropriate backend (Tempo, Prometheus, Loki).
+
+### Services
+
+The following services are defined in `docker-compose.yml` and configured via `docker/observability/`:
+
+| Service | Image | Purpose | Port |
+|---|---|---|---|
+| `otel-collector` | `otel/opentelemetry-collector-contrib` | Receives OTLP data from the API and routes it to Tempo/Prometheus/Loki | `4317` (gRPC), `4318` (HTTP) |
+| `tempo` | `grafana/tempo` | Trace storage and query backend | `3200` |
+| `loki` | `grafana/loki` | Log storage and query backend | `3100` |
+| `prometheus` | `prom/prometheus` | Metrics storage and query backend | `9090` |
+| `grafana` | `grafana/grafana` | Visualization and correlation across traces/metrics/logs | `3000` |
+
+### Configuration
+
+The API sends telemetry to the collector via the `Otel:Endpoint` setting:
+
+```json
+{
+  "Otel": {
+    "Endpoint": "http://otel-collector:4317"
+  }
+}
+```
+
+In Docker, this is overridden via environment variable on the `api` service:
+
+```yaml
+environment:
+  - Otel__Endpoint=http://otel-collector:4317
+```
+
+Collector, Prometheus, Tempo, and Grafana datasource configs live under `docker/observability/`:
+
+- `otel-collector-config.yaml` — OTLP receivers and export pipelines for traces/metrics/logs
+- `prometheus.yml` — scrape config pointing at the collector's Prometheus exporter
+- `tempo.yaml` — local trace storage backend
+- `grafana-datasources.yml` — auto-provisions Prometheus, Tempo, and Loki as Grafana datasources on startup
+
+### Accessing the Dashboards
+
+With the stack running (`docker compose up --build -d`):
+
+- **Grafana**: [http://localhost:3000](http://localhost:3000) (anonymous access enabled for local dev, `Admin` role)
+- **Prometheus** (raw): [http://localhost:9090](http://localhost:9090)
+- **Tempo** (raw API): [http://localhost:3200](http://localhost:3200)
+- **Loki** (raw API): [http://localhost:3100](http://localhost:3100)
+
+### Exploring Telemetry in Grafana
+
+1. Go to **Explore** in the left sidebar.
+2. Select a data source:
+   - **Tempo** → view traces per request, including nested spans for controller → MediatR handler → EF Core queries → outbound HTTP calls (CalorieNinjas, LibreTranslate).
+   - **Prometheus** → query metrics, e.g. `dotnet_process_memory_working_set_bytes`, `http_server_request_duration_seconds_count`.
+   - **Loki** → query logs filtered by service, e.g. `{service_name="nutrimetrics-api"}`.
+3. Use **Drilldown → Traces** for an aggregated view (span rate, error rate, duration distribution) without needing to query manually.
+
+### Notes
+
+- The trace/log/metric pipeline currently uses **local storage** (no persistent volumes configured) — data is lost when containers are recreated. For a persistent setup, add volumes to `tempo`, `loki`, and `prometheus` services.
+- Log ↔ trace correlation (jumping from a log line directly to its trace in Grafana) is not yet wired up — a future improvement is exemplar linking between Loki and Tempo.
+- Custom business-named spans (e.g. per MediatR command/query) are not yet implemented; current spans use framework-level names from ASP.NET Core/EF Core instrumentation.
 
 ---
 
