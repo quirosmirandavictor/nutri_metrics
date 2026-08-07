@@ -7,6 +7,9 @@
 [![API Docs: Swagger](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?logo=swagger&logoColor=white)](#-api-documentation-swagger)
 [![Observability: OpenTelemetry](https://img.shields.io/badge/Observability-OpenTelemetry-425CC7?logo=opentelemetry&logoColor=white)](#-observability-opentelemetry--grafana)
 [![Dashboards: Grafana](https://img.shields.io/badge/Dashboards-Grafana-F46800?logo=grafana&logoColor=white)](#-observability-opentelemetry--grafana)
+[![Last Commit](https://img.shields.io/github/last-commit/quirosmirandavictor/nutri_metrics)](https://github.com/quirosmirandavictor/nutri_metrics/commits/dev)
+[![Release](https://img.shields.io/github/v/tag/quirosmirandavictor/nutri_metrics?label=Release&sort=semver)](https://github.com/quirosmirandavictor/nutri_metrics/releases)
+[![Docs Architecture](https://img.shields.io/badge/Docs-Architecture-0A66C2)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
