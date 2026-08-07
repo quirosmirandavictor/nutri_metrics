@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Modules\CalorieTracking\NutriMetrics.Modules.CalorieTracking.Infrastructure\NutriMetrics.Modules.CalorieTracking.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\CalorieTracking\NutriMetrics.Modules.CalorieTracking.Application\NutriMetrics.Modules.CalorieTracking.Application.csproj" />
     <ProjectReference Include="..\Modules\Identity\NutriMetrics.Modules.Identity.Infrastructure\NutriMetrics.Modules.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Shared\NutriMetrics.Shared.Infrastructure\NutriMetrics.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

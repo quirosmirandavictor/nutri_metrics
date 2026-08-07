@@ -4,6 +4,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace NutriMetrics.Api.Extensions;
+using NutriMetrics.Shared.Infrastructure.Observability;
 
 public static class OpenTelemetryExtensions
 {
@@ -19,8 +20,7 @@ public static class OpenTelemetryExtensions
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
-                .AddSource("NutriMetrics.Identity")
-                .AddSource("NutriMetrics.CalorieTracking")
+                .AddSource(NutriMetricsActivitySource.Name)
                 .AddOtlpExporter(o => o.Endpoint = endpoint))
             .WithMetrics(m => m
                 .AddAspNetCoreInstrumentation()

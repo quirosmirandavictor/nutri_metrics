@@ -2,6 +2,7 @@ using NutriMetrics.Modules.CalorieTracking.Infrastructure;
 using NutriMetrics.Modules.Identity.Infrastructure;
 using Microsoft.OpenApi;
 using NutriMetrics.Api.Extensions;
+using NutriMetrics.Shared.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +41,19 @@ builder.Services.AddSwaggerGen(options =>
 // Modules Registration
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddCalorieTrackingModule(builder.Configuration);
-// builder.Services.AddAnalyticsModule(builder.Configuration);
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        typeof(NutriMetrics.Modules.Identity.Application.Commands.Login.LoginCommand).Assembly,
+        typeof(NutriMetrics.Modules.Identity.Application.Commands.Register.RegisterCommand).Assembly,   
+        typeof(NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.AddFoodItem.AddFoodItemCommand).Assembly,
+        typeof(NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Commands.DeleteFoodItem.DeleteFoodItemCommand).Assembly,
+        typeof(NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.GetFoodItemsByDateRange.FoodItemDto).Assembly,
+        typeof(NutriMetrics.Modules.CalorieTracking.Application.FoodItems.Queries.SearchFood.FoodItemResponse).Assembly
+    );
+    cfg.AddOpenBehavior(typeof(TracingBehavior<,>));
+});
+
 builder.Services.AddNutriMetricsObservability(builder.Configuration);
 builder.Logging.AddNutriMetricsLogging(builder.Configuration);
 
