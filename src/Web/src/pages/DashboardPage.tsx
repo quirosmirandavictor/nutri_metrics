@@ -1,5 +1,6 @@
 import { useAuth } from "../features/auth/hooks/useAuth";
 import FoodSearchCard from "../features/food-search/components/FoodSearchCard";
+import CalorieHistoryCard from "../features/calorie-history/components/CalorieHistoryCard";
 
 export function DashboardPage() {
   const { session, logout } = useAuth();
@@ -15,6 +16,7 @@ export function DashboardPage() {
       </section>
 
       <FoodSearchCard />
+      <CalorieHistoryCard />
     </main>
   );
 }

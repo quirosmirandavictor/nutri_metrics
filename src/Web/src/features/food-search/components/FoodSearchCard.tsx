@@ -12,7 +12,7 @@ const MACRO_COLORS = {
 export default function FoodSearchCard() {
   const [query, setQuery] = useState("");
   const { results, loading, error, search } = useFoodSearch();
-  const { selection, addItem, removeItem, totals } = useFoodSelection();
+  const { selection, addItem, removeItem, saveItem, deleteItem, totals } = useFoodSelection();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -60,19 +60,82 @@ export default function FoodSearchCard() {
         ) : (
           <>
             <ul className="food-selection-list">
-              {selection.map(({ id, item }) => (
+              {selection.map(({ id, item, status, backendId, error: itemError }) => (
                 <li key={id} className="food-selection-item">
-                  <span>
-                    {capitalize(item.name)} · {Math.round(item.calories)} kcal
-                  </span>
-                  <button
-                    type="button"
-                    className="food-selection-item-remove"
-                    onClick={() => removeItem(id)}
-                    aria-label={`Quitar ${item.name}`}
-                  >
-                    Quitar
-                  </button>
+                  <div className="food-selection-item-info">
+                    <span>
+                      {capitalize(item.name)} · {Math.round(item.calories)} kcal
+                    </span>
+                    {status === "saved" && (
+                      <span className="food-status-badge food-status-saved">Guardado</span>
+                    )}
+                    {itemError && <span className="food-status-error">{itemError}</span>}
+                  </div>
+
+                  <div className="food-selection-item-actions">
+                    {status === "draft" && (
+                      <>
+                        <button
+                          type="button"
+                          className="food-save-button"
+                          onClick={() => saveItem(id)}
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          className="food-selection-item-remove"
+                          onClick={() => removeItem(id)}
+                          aria-label={`Quitar ${item.name}`}
+                        >
+                          Quitar
+                        </button>
+                      </>
+                    )}
+
+                    {status === "saving" && (
+                      <button type="button" className="food-save-button" disabled>
+                        Guardando...
+                      </button>
+                    )}
+
+                    {status === "saved" && backendId && (
+                      <button
+                        type="button"
+                        className="food-delete-button"
+                        onClick={() => deleteItem(id)}
+                        aria-label={`Eliminar ${item.name}`}
+                      >
+                        Eliminar
+                      </button>
+                    )}
+
+                    {status === "deleting" && (
+                      <button type="button" className="food-delete-button" disabled>
+                        Eliminando...
+                      </button>
+                    )}
+
+                    {status === "error" && (
+                      <>
+                        <button
+                          type="button"
+                          className="food-save-button"
+                          onClick={() => (backendId ? deleteItem(id) : saveItem(id))}
+                        >
+                          Reintentar
+                        </button>
+                        <button
+                          type="button"
+                          className="food-selection-item-remove"
+                          onClick={() => removeItem(id)}
+                          aria-label={`Quitar ${item.name}`}
+                        >
+                          Quitar
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -95,8 +158,8 @@ export default function FoodSearchCard() {
         )}
 
         <p className="food-selection-note">
-          Esta selección se mantiene en la sesión del navegador. Vas a poder decidir si
-          guardarla en la base de datos desde otra funcionalidad.
+          Guardá cada alimento para registrarlo en tu historial de calorías. Los alimentos sin
+          guardar se pierden al cerrar la pestaña.
         </p>
       </div>
     </section>

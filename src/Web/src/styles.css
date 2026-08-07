@@ -256,12 +256,26 @@ p {
 
 .food-selection-item {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
   background: #f9fafb;
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
+}
+
+.food-selection-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.food-selection-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .food-selection-item-remove {
@@ -271,6 +285,109 @@ p {
   font-size: 0.85rem;
   cursor: pointer;
   font-weight: 600;
+}
+
+.food-status-badge {
+  width: fit-content;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.food-status-saved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.food-status-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+}
+
+.food-save-button {
+  padding: 0.35rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.food-save-button:hover {
+  background: #15803d;
+}
+
+.food-save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.food-delete-button {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.food-delete-button:hover {
+  background: #fef2f2;
+}
+
+.food-delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.date-range-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.date-range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.date-range-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.date-range-field input {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.date-range-form button {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #4338ca;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.date-range-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .food-selection-totals {
