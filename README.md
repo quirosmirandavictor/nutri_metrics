@@ -152,7 +152,7 @@ graph TD
     Client -->|"1. POST /api/food (Add)"| FoodController
     Client -->|"1. DELETE /api/food/{id}"| FoodController
     Client -->|"1. GET /api/food/search?query="| FoodController
-    Client -->|"1. GET /api/food?from=&to= (Date Range)"| FoodController
+    Client -->|"1. GET /api/food/by-date-range?startDate=&endDate="| FoodController
 
     FoodController -->|"2. Send(Command/Query)"| Mediator
     Mediator -->|"3. Dispatches"| AddHandler
@@ -356,7 +356,7 @@ Grafana (visualization)
 
 The API is instrumented via `OpenTelemetryExtensions.cs` (`src/NutriMetrics.Api/Extensions/`), which registers:
 
-- **Tracing**: ASP.NET Core, HttpClient (outbound calls to CalorieNinjas and LibreTranslate), and EF Core instrumentation, plus custom `ActivitySource`s reserved for the `Identity` and `CalorieTracking` modules.
+- **Tracing**: ASP.NET Core, HttpClient (outbound calls to CalorieNinjas and LibreTranslate), EF Core instrumentation, and custom MediatR spans via `TracingBehavior<,>` + `NutriMetricsActivitySource`.
 - **Metrics**: ASP.NET Core, HttpClient, and .NET runtime instrumentation (GC, memory, thread pool).
 - **Logs**: structured logs exported via OpenTelemetry logging provider, correlated with trace context.
 
@@ -395,7 +395,7 @@ environment:
 
 Collector, Prometheus, Tempo, and Grafana datasource configs live under `docker/observability/`:
 
-- `otel-collector-config.yaml` — OTLP receivers and export pipelines for traces/metrics/logs
+- `otel-collector-config.yaml` — OTLP receivers and export pipelines for traces/metrics/logs (logs are exported to Loki via OTLP HTTP)
 - `prometheus.yml` — scrape config pointing at the collector's Prometheus exporter
 - `tempo.yaml` — local trace storage backend
 - `grafana-datasources.yml` — auto-provisions Prometheus, Tempo, and Loki as Grafana datasources on startup
@@ -422,7 +422,7 @@ With the stack running (`docker compose up --build -d`):
 
 - The trace/log/metric pipeline currently uses **local storage** (no persistent volumes configured) — data is lost when containers are recreated. For a persistent setup, add volumes to `tempo`, `loki`, and `prometheus` services.
 - Log ↔ trace correlation (jumping from a log line directly to its trace in Grafana) is not yet wired up — a future improvement is exemplar linking between Loki and Tempo.
-- Custom business-named spans (e.g. per MediatR command/query) are not yet implemented; current spans use framework-level names from ASP.NET Core/EF Core instrumentation.
+- Custom business spans are implemented at the MediatR pipeline level via `TracingBehavior<,>`, adding request/module/type tags for commands and queries.
 
 ---
 
@@ -485,8 +485,8 @@ Register/Login → JWT Token → Protected Endpoints with [Authorize]
 **Response**:
 ```json
 {
-  "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "user@example.com"
+  "message": "Token válido",
+  "userId": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
@@ -732,7 +732,7 @@ public class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
 
 3. **Set secure values** in `.env` (at minimum `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `CALORIE_NINJAS_API_KEY`)
 
-4. **Start local profile** (Web + API + MySQL + LibreTranslate)
+4. **Start local profile** (Web + API + MySQL + LibreTranslate + observability stack)
   ```bash
   docker compose up --build -d
   ```
@@ -771,6 +771,28 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml down
   ```bash
   dotnet run --project src/NutriMetrics.Api/NutriMetrics.Api.csproj
   ```
+
+---
+
+## 🖥️ Web App (React + Vite)
+
+The frontend lives in `src/Web` and is currently organized around three user flows:
+
+- **Authentication** (`features/auth`): login, register, protected navigation, JWT session management.
+- **Food Search & Selection** (`features/food-search`): search external nutrition data, create a local selection, save/delete items through `/api/food`.
+- **Calorie History** (`features/calorie-history`): query `/api/food/by-date-range` and aggregate calories per day for charting.
+
+Current routes:
+
+- `/login`
+- `/register`
+- `/dashboard` (protected)
+
+Main dashboard composition:
+
+- `FoodSearchCard`
+- `CalorieHistoryCard`
+- `ReusableLineChart` (shared chart component)
 
 ---
 
@@ -898,7 +920,9 @@ GET    /api/auth/verify     - Verify token validity [Authorize]
 ### Food Items
 ```
 POST   /api/food            - Add food item [Authorize]
-GET    /api/food/search?q=  - Search foods by query [Authorize]
+GET    /api/food/search?query=  - Search foods by query [Authorize]
+GET    /api/food/by-date-range?startDate=&endDate=  - List current user's items by date range [Authorize]
+DELETE /api/food/{id}       - Delete a user's food item [Authorize]
 ```
 
 ### Example — Search Food
@@ -914,18 +938,18 @@ GET /api/food/search?query=2 manzanas y 100g de pechuga de pollo
   {
     "name": "apple",
     "calories": 94.6,
-    "protein": 0.5,
-    "fat": 0.3,
-    "carbohydrates": 25.1,
-    "servingSize": 182
+    "proteinGrams": 0.5,
+    "fatGrams": 0.3,
+    "carbohydratesGrams": 25.1,
+    "servingSizeGrams": 182
   },
   {
     "name": "chicken breast",
     "calories": 165,
-    "protein": 31,
-    "fat": 3.6,
-    "carbohydrates": 0,
-    "servingSize": 100
+    "proteinGrams": 31,
+    "fatGrams": 3.6,
+    "carbohydratesGrams": 0,
+    "servingSizeGrams": 100
   }
 ]
 ```
@@ -1014,7 +1038,7 @@ Endpoints protected with `[Authorize]` require a valid JWT. To test them from Sw
 4. From then on, all protected requests are executed with that token
 
 The raw OpenAPI document (JSON) is also available directly at:
-http://localhost:[port]/openapi/v1.json (example http://localhost:5162/openapi/v1.json)
+http://localhost:[port]/swagger/v1/swagger.json (example http://localhost:8080/swagger/v1/swagger.json)
 
 ---
 ## 🎯 Design Goals
@@ -1038,5 +1062,5 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ---
 
-**Last Updated**: July 2026
-**Version**: 1.0.0 (Multi-User with JWT Authentication)
+**Last Updated**: August 2026
+**Version**: 1.1.0 (Web Dashboard + Date-Range Tracking + OpenTelemetry Stack)
