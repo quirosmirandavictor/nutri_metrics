@@ -309,6 +309,31 @@ The project architecture decisions are documented in `docs/adr/`. The table belo
 
 ---
 
+## 🛡️ Non-Functional Requirements (NFR)
+
+The repository includes a set of Non-Functional Requirements that defines the expected security, reliability, performance, operability, maintainability, cost, and disaster-recovery characteristics of NutriMetrics.
+
+These requirements complement the functional API documentation and architecture decisions. They are especially relevant to the intended deployment model: an isolated deployment and Azure resource set for each gym or nutrition professional.
+
+The complete catalog and the detailed acceptance criteria are available in [`docs/nfr/README.md`](docs/nfr/README.md).
+
+| ID | Requirement | Category | Priority |
+|----|-------------|----------|----------|
+| [NFR-01](docs/nfr/NFR-01-authentication-security-hardening.md) | Authentication & Secrets Hardening | Security | Must-have |
+| [NFR-02](docs/nfr/NFR-02-transport-security.md) | Transport Layer Security (HTTPS Enforcement) | Security | Must-have |
+| [NFR-03](docs/nfr/NFR-03-rate-limiting-abuse-protection.md) | Rate Limiting & Abuse Protection | Security / Cost Management | Must-have |
+| [NFR-04](docs/nfr/NFR-04-data-privacy-protection.md) | Personal & Nutrition Data Privacy Protection | Privacy / Compliance | Must-have |
+| [NFR-05](docs/nfr/NFR-05-resilience-external-dependencies.md) | Resilience Against External Dependency Failures | Reliability | Must-have |
+| [NFR-06](docs/nfr/NFR-06-availability-health-checks.md) | Availability & Health Monitoring | Reliability / Operability | Should-have |
+| [NFR-07](docs/nfr/NFR-07-performance-scalability.md) | Performance & Right-Sizing per Deployment | Performance | Should-have |
+| [NFR-08](docs/nfr/NFR-08-infrastructure-isolation-provisioning.md) | Infrastructure Isolation & Repeatable Per-Client Provisioning (IaC) | Architecture / Operability | Must-have |
+| [NFR-09](docs/nfr/NFR-09-centralized-fleet-observability.md) | Centralized Fleet Observability & Alerting | Operability | Should-have |
+| [NFR-10](docs/nfr/NFR-10-testability-ci-cd.md) | Testability & Continuous Integration | Maintainability | Must-have |
+| [NFR-11](docs/nfr/NFR-11-cost-governance-per-deployment.md) | Cost Governance & Resource Efficiency per Client Deployment | Operability / Cost Management | Should-have |
+| [NFR-12](docs/nfr/NFR-12-backup-disaster-recovery.md) | Backup & Disaster Recovery | Reliability / Data Durability | Must-have |
+
+---
+
 ## 🗄️ Database Schema
 
 ### Single Database: `nutrimetrics_calorietracking`
